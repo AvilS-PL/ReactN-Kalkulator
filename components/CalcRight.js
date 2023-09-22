@@ -11,7 +11,7 @@ export default class CalcRight extends Component {
   }
 
   render() {
-    let tab = ["Del","C","/","*","-","+"]
+    let tab = ["Del", "C", "/", "*", "-", "+"]
     let full = tab.map((v, i) => (<Button getData={this.props.getData} text={v} key={i} w={1} h={tab.length} />))
     return (
       <View style={styles.main}>
@@ -23,7 +23,7 @@ export default class CalcRight extends Component {
 
 const styles = StyleSheet.create({
   main: {
-      flex:1,
-      backgroundColor: "#999999",
+    flex: 1,
+    backgroundColor: "#999999",
   }
 });
