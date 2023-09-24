@@ -9,7 +9,7 @@ import CalcPro from './components/CalcPro';
 export default class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { orientation: false, exp: "", res: "" };
+    this.state = { orientation: true, exp: "", res: "" };
 
     Dimensions.addEventListener("change", () => {
       this.setState({
@@ -27,12 +27,19 @@ export default class App extends React.Component {
     if (v == "Del") {
       outcome = ""
     } else if (v == "C") {
-      if (outcome.length > 0 && outcome[outcome.length - 1].search(/[0-9]/g) == -1) {
-        while (outcome.length > 0 && outcome[outcome.length - 1].search(/[0-9]/g) == -1) {
+      if (outcome.length > 0) {
+        if (outcome[outcome.length - 1].search(/\*/g) != -1) {
+          outcome = outcome.slice(0, -1)
+          if (outcome.length > 0) {
+            if (outcome[outcome.length - 1].search(/\*/g) != -1) {
+              outcome = outcome.slice(0, -1)
+            }
+          }
+        } else if (outcome[outcome.length - 1].search(/n|s/g) != -1) {
+          outcome = outcome.slice(0, -3)
+        } else {
           outcome = outcome.slice(0, -1)
         }
-      } else if (outcome.length > 0) {
-        outcome = outcome.slice(0, -1)
       }
     } else if (v == "=") {
       if (outcome.length > 0) {
@@ -67,13 +74,20 @@ export default class App extends React.Component {
     } else if (v == "Sqrt" || v == "Sin" || v == "Cos") {
       if (outcome.length > 0) {
         if (outcome[outcome.length - 1].search(/\*|\+|\/|\-|\.|√|n|s/g) == -1) {
-          //dodaj opcję pierwiastka w pierwiastku zamieast * pierwiastek, to samo do sin i cos
           if (v == "Sqrt") {
             outcome = outcome + "*√"
           } else if (v == "Sin") {
             outcome = outcome + "*sin"
           } else if (v == "Cos") {
             outcome = outcome + "*cos"
+          }
+        } else if (outcome[outcome.length - 1].search(/\*|\+|\/|\-/g) != -1) {
+          if (v == "Sqrt") {
+            outcome = outcome + "√"
+          } else if (v == "Sin") {
+            outcome = outcome + "sin"
+          } else if (v == "Cos") {
+            outcome = outcome + "cos"
           }
         }
       } else {
@@ -106,21 +120,83 @@ export default class App extends React.Component {
       res: result
 
     })
-    //, () => { console.log("po: ") }
   }
 
   getExpression = (e) => {
     let spSIN = e.split(/sin/g)
-    console.log(spSIN)
     if (spSIN.length > 1) {
-      let temp = spSIN[0]
+      let w = spSIN[0]
+
       for (let i = 1; i < spSIN.length; i++) {
-        temp += "Math.sin(" + spSIN[i] + ")"
+        let temp = spSIN[i]
+        let sp = ""
+        let lit = ""
+
+        for (let j = 0; j < temp.length; j++) {
+          if (temp[j].search(/[0-9]/g) == -1) {
+            lit = temp.slice(j)
+            break
+          } else {
+            sp += temp[j]
+          }
+        }
+
+        sp = (sp * Math.PI) / 180
+
+        w += "(Math.round(Math.sin(" + sp + ")*1000)/1000)" + lit
       }
-      e = temp
+      e = w
     }
-    console.log(e)
-    return eval("1")
+
+    let spCOS = e.split(/cos/g)
+    if (spCOS.length > 1) {
+      let w = spCOS[0]
+
+      for (let i = 1; i < spCOS.length; i++) {
+        let temp = spCOS[i]
+        let sp = ""
+        let lit = ""
+
+        for (let j = 0; j < temp.length; j++) {
+          if (temp[j].search(/[0-9]/g) == -1) {
+            lit = temp.slice(j)
+            break
+          } else {
+            sp += temp[j]
+          }
+        }
+
+        sp = (sp * Math.PI) / 180
+
+        w += "(Math.round(Math.cos(" + sp + ")*1000)/1000)" + lit
+      }
+      e = w
+    }
+
+    let spSQ = e.split(/√/g)
+    if (spSQ.length > 1) {
+      let w = spSQ[0]
+
+      for (let i = 1; i < spSQ.length; i++) {
+        let temp = spSQ[i]
+        let sp = ""
+        let lit = ""
+
+        for (let j = 0; j < temp.length; j++) {
+          if (temp[j].search(/[0-9]/g) == -1) {
+            lit = temp.slice(j)
+            break
+          } else {
+            sp += temp[j]
+          }
+        }
+
+        w += "(Math.sqrt(" + sp + "))" + lit
+      }
+      e = w
+    }
+
+    return eval(e)
   }
 
   isPortrait = () => {
